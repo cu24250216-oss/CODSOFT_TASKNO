@@ -1,0 +1,166 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMy9UcSgz0W6ppLdmbkW0hr",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/cu24250216-oss/CODSOFT_TASKNO/blob/main/restaurant-recommendation\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# ==========================================\n",
+        "# Restaurant Recommendation System\n",
+        "# ==========================================\n",
+        "\n",
+        "import pandas as pd\n",
+        "from sklearn.preprocessing import LabelEncoder\n",
+        "\n",
+        "# Load Dataset\n",
+        "df = pd.read_csv(\"/content/Dataset  (1).csv\")  # Change path if needed\n",
+        "\n",
+        "# ------------------------------------------\n",
+        "# Handle Missing Values\n",
+        "# ------------------------------------------\n",
+        "for col in df.columns:\n",
+        "    if df[col].dtype == 'object':\n",
+        "        df[col] = df[col].fillna(df[col].mode()[0])\n",
+        "    else:\n",
+        "        df[col] = df[col].fillna(df[col].median())\n",
+        "\n",
+        "# ------------------------------------------\n",
+        "# Encode Categorical Variables (Optional)\n",
+        "# ------------------------------------------\n",
+        "le = LabelEncoder()\n",
+        "\n",
+        "for col in df.select_dtypes(include='object').columns:\n",
+        "    df[col] = le.fit_transform(df[col])\n",
+        "\n",
+        "# ------------------------------------------\n",
+        "# Reload original dataset for displaying names\n",
+        "# ------------------------------------------\n",
+        "original_df = pd.read_csv(\"/content/Dataset  (1).csv\")\n",
+        "\n",
+        "for col in original_df.columns:\n",
+        "    if original_df[col].dtype == 'object':\n",
+        "        original_df[col] = original_df[col].fillna(original_df[col].mode()[0])\n",
+        "    else:\n",
+        "        original_df[col] = original_df[col].fillna(original_df[col].median())\n",
+        "\n",
+        "# ------------------------------------------\n",
+        "# User Preferences\n",
+        "# ------------------------------------------\n",
+        "preferred_cuisine = \"North Indian\"\n",
+        "preferred_price = 2        # Example: 1=Cheap, 2=Moderate, 3=Expensive, 4=Luxury\n",
+        "minimum_rating = 4.0\n",
+        "\n",
+        "# ------------------------------------------\n",
+        "# Content-Based Filtering\n",
+        "# ------------------------------------------\n",
+        "recommendations = original_df[\n",
+        "    (original_df[\"Cuisines\"].str.contains(preferred_cuisine, case=False, na=False)) &\n",
+        "    (original_df[\"Price range\"] == preferred_price) &\n",
+        "    (original_df[\"Aggregate rating\"] >= minimum_rating)\n",
+        "]\n",
+        "\n",
+        "recommendations = recommendations.sort_values(\n",
+        "    by=[\"Aggregate rating\", \"Votes\"],\n",
+        "    ascending=False\n",
+        ")\n",
+        "\n",
+        "# ------------------------------------------\n",
+        "# Display Recommendations\n",
+        "# ------------------------------------------\n",
+        "print(\"\\nRecommended Restaurants\\n\")\n",
+        "\n",
+        "if len(recommendations) > 0:\n",
+        "    print(recommendations[\n",
+        "        [\n",
+        "            \"Restaurant Name\",\n",
+        "            \"Cuisines\",\n",
+        "            \"Average Cost for two\",\n",
+        "            \"Price range\",\n",
+        "            \"Aggregate rating\",\n",
+        "            \"Votes\"\n",
+        "        ]\n",
+        "    ].head(10))\n",
+        "else:\n",
+        "    print(\"No matching restaurants found.\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "rU3HX_edbB1j",
+        "outputId": "f12936a2-844a-4101-feea-813050b11263"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Recommended Restaurants\n",
+            "\n",
+            "                   Restaurant Name  \\\n",
+            "9394                       Dishoom   \n",
+            "734             ECHOES Koramangala   \n",
+            "2407              India Restaurant   \n",
+            "2456                  Aman Chicken   \n",
+            "6426                   Food Scouts   \n",
+            "4206           Midnight Hunger Hub   \n",
+            "818                      Palmshore   \n",
+            "9162                         Kargo   \n",
+            "9194                Saffron Mantra   \n",
+            "760   Manohar Dairy And Restaurant   \n",
+            "\n",
+            "                                               Cuisines  Average Cost for two  \\\n",
+            "9394                  Indian, North Indian, Curry, Cafe                    35   \n",
+            "734   Continental, American, Italian, North Indian, ...                   950   \n",
+            "2407            Biryani, North Indian, Chinese, Mughlai                   800   \n",
+            "2456                              North Indian, Mughlai                   800   \n",
+            "6426                 North Indian, Chinese, Continental                   700   \n",
+            "4206            North Indian, Fast Food, Italian, Asian                   800   \n",
+            "818        North Indian, Mughlai, Chinese, South Indian                   850   \n",
+            "9162  Charcoal Grill, Italian, North Indian, Europea...                   900   \n",
+            "9194                              North Indian, Chinese                   850   \n",
+            "760     North Indian, South Indian, Street Food, Bakery                   400   \n",
+            "\n",
+            "      Price range  Aggregate rating  Votes  \n",
+            "9394            2               4.7    964  \n",
+            "734             2               4.7    276  \n",
+            "2407            2               4.6   1219  \n",
+            "2456            2               4.6    196  \n",
+            "6426            2               4.6     61  \n",
+            "4206            2               4.5     50  \n",
+            "818             2               4.4    645  \n",
+            "9162            2               4.4    635  \n",
+            "9194            2               4.4    494  \n",
+            "760             2               4.4    243  \n"
+          ]
+        }
+      ]
+    }
+  ]
+}
